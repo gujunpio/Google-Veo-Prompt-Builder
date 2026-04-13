@@ -7,7 +7,7 @@
         :root { --primary: #1a73e8; --bg: #ffffff; --section-bg: #f8f9fa; --border: #dadce0; --text: #3c4043; }
         :root.dark-mode { --primary: #8ab4f8; --bg: #202124; --section-bg: #292a2d; --border: #3c4043; --text: #e8eaed; }
         
-        body { width: 400px; padding: 15px 15px 80px 15px; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; transition: background 0.3s, color 0.3s; }
+        body { width: 100%; max-width: 800px; min-width: 300px; box-sizing: border-box; padding: 15px 15px 80px 15px; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0 auto; transition: background 0.3s, color 0.3s; }
 
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 12px; }
         h3 { margin: 0; color: var(--primary); font-size: 15px; font-weight: 600; }
@@ -71,8 +71,10 @@
 .bottom-bar {
     position: fixed;
     bottom: 0;
-    left: 0;
+    left: 50%;
+    transform: translateX(-50%);
     width: 100%;
+    max-width: 800px;
     background: var(--bg);
     padding: 10px 15px 15px 15px;
     box-sizing: border-box;
