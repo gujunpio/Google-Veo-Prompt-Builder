@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Veo Prompt Studio</title>
+    <style>
+        :root { --primary: #1a73e8; --bg: #ffffff; --section-bg: #f8f9fa; --border: #dadce0; --text: #3c4043; }
+        :root.dark-mode { --primary: #8ab4f8; --bg: #202124; --section-bg: #292a2d; --border: #3c4043; --text: #e8eaed; }
+        
+        body { width: 400px; padding: 15px 15px 80px 15px; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; transition: background 0.3s, color 0.3s; }
+
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 12px; }
+        h3 { margin: 0; color: var(--primary); font-size: 15px; font-weight: 600; }
+        .formula-tag { font-size: 9px; color: #9aa0a6; font-weight: 400; margin-left: 5px; }
+
+        #toggleSettings, #toggleDarkMode { cursor: pointer; padding: 5px; border-radius: 50%; display: flex; align-items: center; flex-shrink: 0; }
+        #toggleSettings:hover, #toggleDarkMode:hover { background: rgba(154, 160, 166, 0.2); }
+        #toggleSettings svg, #toggleDarkMode svg { fill: var(--text); width: 18px; height: 18px; }
+
+        #aiSettingsBox { display: none; background: var(--section-bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 12px; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+        .ai-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px dashed #ddd; padding-bottom: 5px; }
+        .sync-link { font-size: 10px; color: var(--primary); cursor: pointer; text-decoration: underline; }
+
+        .group { background: var(--section-bg); border: 1px solid var(--border); border-radius: 8px; padding: 9px 10px 5px; margin-bottom: 9px; transition: background 0.3s, border 0.3s; }
+        .group-title { font-size: 9px; font-weight: 700; color: #9aa0a6; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 7px; display: flex; align-items: center; gap: 5px; }
+        .badge { color: white; border-radius: 10px; padding: 1px 6px; font-size: 8px; font-weight: 700; }
+        .b-blue   { background: #1a73e8; }
+        .b-green  { background: #1e8e3e; }
+        .b-purple { background: #7c4dff; }
+        .b-orange { background: #e8710a; }
+        .b-teal   { background: #007b83; }
+        .translate-note { font-size: 9px; color: #1e8e3e; margin-left: 3px; }
+
+        .group-green { background: #e6f4ea; border-color: #ceead6; }
+        :root.dark-mode .group-green { background: #132318; border-color: #1e8e3e; }
+
+        .btn-trans-mini { font-size: 11px; padding: 2px 5px; margin-left: auto; cursor: pointer; background: transparent; color: var(--primary); border: 1px solid var(--border); border-radius: 4px; transition: 0.2s; }
+        .btn-trans-mini:hover { background: rgba(26,115,232,0.1); }
+
+        .section { margin-bottom: 7px; }
+        label { display: block; font-size: 10px; font-weight: 700; color: #9aa0a6; margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.4px; }
+        input, textarea, select { width: 100%; box-sizing: border-box; padding: 7px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 12px; outline: none; background: var(--bg); color: var(--text); font-family: inherit; transition: 0.2s; }
+        input:focus, textarea:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(26,115,232,0.1); }
+        .row-2 { display: flex; gap: 6px; }
+        .row-2 > * { flex: 1; min-width: 0; }
+
+        .btn-group { display: flex; gap: 8px; margin-top: 12px; }
+        button { flex: 1; padding: 11px; cursor: pointer; border: none; border-radius: 6px; font-weight: 600; font-size: 12px; transition: 0.2s; text-transform: uppercase; }
+        #btnTranslate { background: rgba(26,115,232,0.1); color: var(--primary); border: 1px solid var(--border); }
+        #btnTranslate:hover { background: rgba(26,115,232,0.2); }
+        #btnCopy { background: var(--primary); color: white; }
+        #btnCopy:hover { background: #1557b0; }
+
+        .status { font-size: 11px; margin-top: 8px; text-align: center; min-height: 15px; color: var(--primary); }
+        .status.error { color: #d93025; }
+
+        .switch { position: relative; display: inline-block; width: 30px; height: 16px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .3s; border-radius: 20px; }
+        .slider:before { position: absolute; content: ""; height: 12px; width: 12px; left: 2px; bottom: 2px; background-color: white; transition: .3s; border-radius: 50%; }
+        input:checked + .slider { background-color: #1e8e3e; }
+        input:checked + .slider:before { transform: translateX(14px); }
+		#btnGenMultishot { background: #34a853; color: white; padding: 7px; flex: 0.5; }
+#btnGenMultishot:hover { background: #2b8c46; }
+#btnGenMultishot:disabled { background: #999; cursor: not-allowed; }
+#btnCopyMultishot { background: var(--border); color: var(--text); margin-top: 5px; width: 100%; border: 1px solid var(--border); }
+#btnCopyMultishot:hover { background: rgba(154,160,166,0.2); }
+#multishotOutput { font-family: monospace; font-size: 11px; line-height: 1.4; resize: vertical; }
+/* Thanh công cụ ghim cố định ở đáy */
+.bottom-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: var(--bg);
+    padding: 10px 15px 15px 15px;
+    box-sizing: border-box;
+    border-top: 1px solid var(--border);
+    box-shadow: 0 -4px 12px rgba(0,0,0,0.06);
+    z-index: 999;
+}
+.bottom-bar .btn-group { margin-top: 4px; }
+.bottom-bar .status { margin-top: 0; margin-bottom: 4px; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h3>Veo Prompt Studio <span class="formula-tag">Camera → Subject → Context → Style</span></h3>
+        <div style="display: flex; gap: 6px;">
+            <div id="toggleDarkMode">
+                <svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg>
+            </div>
+            <div id="toggleSettings">
+                <svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.81,11.68,4.81,12s0.02,0.65,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94zM12,15.5c-1.93,0-3.5-1.57-3.5-3.5 s1.57-3.5,3.5-3.5s3.5,1.57,3.5,3.5S13.93,15.5,12,15.5z"/></svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI SETTINGS -->
+    <div id="aiSettingsBox">
+        <div class="ai-header">
+            <div style="font-size:11px;font-weight:bold;color:#1e8e3e;">Gemini Engine</div>
+            <label class="switch"><input type="checkbox" id="useAI"><span class="slider"></span></label>
+        </div>
+        <div class="section"><label>API Key</label><input type="password" id="apiKey" placeholder="Gemini API Key"></div>
+        <div class="section">
+            <div style="display:flex;justify-content:space-between;">
+                <label>Model</label>
+                <span id="syncModels" class="sync-link">↻ Sync models</span>
+            </div>
+            <select id="modelSelect"></select>
+        </div>
+        <div class="section">
+            <label>Translate System Prompt <span style="font-weight:normal;color:#9aa0a6;">(Variable: {TEXT})</span></label>
+            <textarea id="promptTranslate" rows="3"></textarea>
+        </div>
+        <div class="section">
+            <label>Multishot System Prompt</label>
+            <textarea id="promptMultishot" rows="4"></textarea>
+            <div style="font-size: 8px; color: #9aa0a6; margin-top: 3px;">
+                Variables: {NUM_SHOTS}, {TIMESTAMPS}, {CONTENT}, {ENVIRONMENT}, {CINEMATOGRAPHY}
+            </div>
+        </div>
+        <div class="section" style="display:flex;align-items:center;justify-content:space-between;border-top:1px dashed var(--border);padding-top:8px;margin-top:8px;">
+            <label style="margin:0;">Output Format</label>
+            <div style="display:flex; align-items:center; gap:5px; font-size:10px; font-weight:bold; color:var(--text); text-transform:uppercase;">
+                Comma
+                <label class="switch"><input type="checkbox" id="useNewline"><span class="slider"></span></label>
+                Newline
+            </div>
+        </div>
+    </div>
+
+    <!-- ① CINEMATOGRAPHY — Google formula: first -->
+    <div class="group">
+        <div class="group-title">
+            <span class="badge b-blue">①</span> 🎥 Cinematography
+            <button class="btn-trans-mini" data-group="1" title="Translate">🌐</button>
+        </div>
+
+        <div class="section">
+            <label>Shot Type & Angle</label>
+            <div class="row-2">
+                <input list="shots" id="shot" placeholder="Shot type...">
+                <input list="angles" id="angle" placeholder="Angle...">
+            </div>
+            <datalist id="shots">
+                <option value="Medium shot">
+                <option value="Close-up shot">
+                <option value="Extreme close-up">
+                <option value="Wide shot">
+                <option value="Full shot">
+                <option value="Two-shot">
+                <option value="Over-the-shoulder shot">
+                <option value="POV shot">
+                <option value="Establishing shot">
+            </datalist>
+            <datalist id="angles">
+                <option value="Eye level">
+                <option value="Low angle">
+                <option value="High angle">
+                <option value="Bird's eye view">
+                <option value="Worm's eye view">
+                <option value="Dutch angle">
+            </datalist>
+        </div>
+
+        <div class="section">
+            <label>Camera Movement</label>
+            <input list="movements" id="movement" placeholder="Camera movement...">
+            <datalist id="movements">
+                <option value="Static">
+                <option value="Slow pan left">
+                <option value="Slow pan right">
+                <option value="Tilt up">
+                <option value="Tilt down">
+                <option value="Dolly in">
+                <option value="Dolly out">
+                <option value="Tracking shot">
+                <option value="Orbit around subject">
+                <option value="Crane shot ascending">
+                <option value="Crane shot descending">
+                <option value="Drone aerial shot">
+                <option value="Handheld">
+                <option value="Zoom in">
+                <option value="Zoom out">
+                <option value="360 roll">
+            </datalist>
+        </div>
+
+        <div class="section">
+            <label>Lens & Focus</label>
+            <input list="lenses" id="lens" placeholder="Lens & depth of field...">
+            <datalist id="lenses">
+                <option value="Shallow depth of field, soft bokeh">
+                <option value="Deep focus, all elements sharp">
+                <option value="Macro lens, extreme detail">
+                <option value="Wide-angle lens, slight distortion">
+                <option value="Anamorphic lens, horizontal flare">
+                <option value="Telephoto lens, compressed perspective">
+                <option value="Soft focus, dreamy haze">
+                <option value="Rack focus from foreground to background">
+            </datalist>
+        </div>
+    </div>
+
+    <!-- ② SUBJECT + ACTION -->
+    <div class="group group-green">
+        <div class="group-title">
+            <span class="badge b-green">②</span> 🏃 Subject & Action
+            <span class="translate-note">← auto-translate</span>
+        </div>
+        <div class="section">
+            <textarea id="content" rows="3" placeholder="WHO is doing WHAT — describe in detail..."></textarea>
+        </div>
+    </div>
+
+    <!-- ③ CONTEXT / ENVIRONMENT -->
+    <div class="group group-green">
+        <div class="group-title">
+            <span class="badge b-green">③</span> 🌍 Environment & Context
+            <span class="translate-note">← auto-translate</span>
+        </div>
+        <div class="section">
+            <input id="environment" placeholder="Where, when, background details...">
+        </div>
+    </div>
+
+    <!-- ④ STYLE & AMBIANCE -->
+    <div class="group">
+        <div class="group-title">
+            <span class="badge b-purple">④</span> 🎨 Style & Ambiance
+            <button class="btn-trans-mini" data-group="4" title="Translate">🌐</button>
+        </div>
+
+        <div class="section">
+            <label>Art Style</label>
+            <input list="styles" id="style" placeholder="Art style...">
+            <datalist id="styles">
+                <option value="Pixar 3D animation style">
+                <option value="Studio Ghibli animation style">
+                <option value="Anime style">
+                <option value="Stop-motion animation">
+                <option value="Claymation style">
+                <option value="2D hand-drawn animation">
+                <option value="Cinematic realistic">
+                <option value="Documentary style">
+                <option value="Cyberpunk aesthetic">
+                <option value="Film noir">
+                <option value="Retro 1980s aesthetic">
+                <option value="Watercolor illustration">
+            </datalist>
+        </div>
+
+        <div class="section">
+            <label>Mood & Atmosphere</label>
+            <input list="moods" id="mood" placeholder="Mood and tone...">
+            <datalist id="moods">
+                <option value="Warm and joyful">
+                <option value="Mysterious and tense">
+                <option value="Melancholic and quiet">
+                <option value="Epic and awe-inspiring">
+                <option value="Playful and energetic">
+                <option value="Romantic and dreamy">
+                <option value="Dark and eerie">
+                <option value="Hopeful and uplifting">
+                <option value="Nostalgic and sentimental">
+                <option value="Comedic and lighthearted">
+            </datalist>
+        </div>
+
+        <div class="section">
+            <label>Lighting & Color</label>
+            <input list="lightings" id="lighting" placeholder="Lighting & color palette...">
+            <datalist id="lightings">
+                <option value="Golden hour, warm soft light">
+                <option value="Blue hour, cool twilight tones">
+                <option value="Soft natural daylight">
+                <option value="Overcast diffused light">
+                <option value="Neon-lit, vibrant cyberpunk glow">
+                <option value="Candlelight, warm practical light">
+                <option value="High contrast dramatic shadows">
+                <option value="Soft studio lighting, even tones">
+                <option value="Moonlight, cool night scene">
+                <option value="Harsh midday sunlight">
+                <option value="Backlit silhouette, rim lighting">
+                <option value="Fog-diffused light, hazy atmosphere">
+            </datalist>
+        </div>
+    </div>
+
+    <!-- ⑤ MOTION & TECHNICAL -->
+    <div class="group">
+        <div class="group-title">
+            <span class="badge b-orange">⑤</span> ⚡ Motion & Technical
+            <button class="btn-trans-mini" data-group="5" title="Translate">🌐</button>
+        </div>
+
+        <div class="section">
+            <label>Motion & Pace</label>
+            <input list="motions" id="motion" placeholder="Speed & motion style...">
+            <datalist id="motions">
+                <option value="Normal speed">
+                <option value="Slow motion">
+                <option value="Extreme slow motion, 240fps">
+                <option value="Time-lapse">
+                <option value="Hyper-lapse">
+                <option value="Fast-paced, energetic">
+                <option value="Freeze frame at peak action">
+                <option value="Speed ramp, slow to fast">
+                <option value="Speed ramp, fast to slow">
+            </datalist>
+        </div>
+
+        <div class="section">
+            <label>Technical Details</label>
+            <input list="technicals" id="technical" placeholder="Film look, grain, color grade...">
+            <datalist id="technicals">
+                <option value="Subtle film grain texture">
+                <option value="Heavy film grain, vintage feel">
+                <option value="High dynamic range (HDR)">
+                <option value="Crisp ultra-sharp detail">
+                <option value="Vintage color grading, faded tones">
+                <option value="High contrast black and white">
+                <option value="Desaturated palette, cold tones">
+                <option value="Oversaturated vivid colors">
+                <option value="Teal and orange color grade">
+            </datalist>
+        </div>
+    </div>
+
+    <!-- ⑥ AUDIO — Veo 3.1 -->
+    <div class="group">
+        <div class="group-title">
+            <span class="badge b-teal">⑥</span> 🎵 Audio — Veo 3.1
+            <button class="btn-trans-mini" data-group="6" title="Translate">🌐</button>
+        </div>
+
+        <div class="section">
+            <label>Dialogue / SFX / Ambient</label>
+            <input id="audio" placeholder='e.g. SFX: leaves rustle. A child says "Look up!"'>
+        </div>
+
+        <div class="section">
+            <label>Music Background</label>
+            <select id="music">
+                <option value="" selected>No music background</option>
+                <option value="With upbeat background music">With upbeat background music</option>
+                <option value="With soft ambient background music">With soft ambient background music</option>
+                <option value="With dramatic orchestral score">With dramatic orchestral score</option>
+                <option value="With playful cartoon music">With playful cartoon music</option>
+                <option value="With cinematic epic score">With cinematic epic score</option>
+            </select>
+        </div>
+    </div>
+<!-- ⑦ MULTISHOT GENERATOR (AI) -->
+    <div class="group">
+        <div class="group-title"><span class="badge b-purple">⑦</span> 🎞️ Multishot Generation (AI)</div>
+        
+        <div class="section row-2" style="align-items: center; margin-bottom: 8px;">
+            <label style="margin: 0; flex: 1;">Number of scenes (Max 8s):</label>
+            <select id="numShots" style="flex: 0.5; padding: 5px;">
+                <option value="2">2 scenes</option>
+                <option value="3">3 scenes</option>
+                <option value="4" selected>4 scenes</option>
+            </select>
+            <button id="btnGenMultishot">Generate</button>
+        </div>
+
+        <div class="section">
+            <textarea id="multishotOutput" rows="6" placeholder="AI will generate timestamped shots here... (You can edit before copying)"></textarea>
+            <button id="btnCopyMultishot">Copy Multishot Prompt</button>
+        </div>
+    </div>
+   <!-- BOTTOM ACTION BAR (Ghim cố định) -->
+    <div class="bottom-bar">
+        <div id="status" class="status"></div>
+        <div class="btn-group">
+            <button id="btnTranslate">Translate ②③</button>
+            <button id="btnCopy">Copy Prompt</button>
+        </div>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>

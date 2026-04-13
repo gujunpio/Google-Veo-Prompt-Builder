@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "Prompt Builder for Google Veo",
+  "version": "1.6",
+  "description": "Professional Veo Prompting with Gemini 3.1 AI Support",
+  "permissions": ["contextMenus", "storage"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "commands": {
+    "open_builder_window": {
+      "suggested_key": {
+        "default": "Alt+Shift+P"
+      },
+      "description": "Open Prompt Builder"
+    }
+  }
+}
