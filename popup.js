@@ -353,3 +353,15 @@ document.querySelectorAll('.btn-trans-mini').forEach(btn => {
         showStatus(`Translated Group ${group}!`);
     });
 });
+
+// ============================================================
+// 10. Pop-out window
+// ============================================================
+document.getElementById('btnPopOut').addEventListener('click', () => {
+    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
+        chrome.runtime.sendMessage({ action: 'openPopupWindow' });
+        window.close();
+    } else {
+        window.open(window.location.href, '_blank', 'width=540,height=900,menubar=no,toolbar=no,location=no,status=no');
+    }
+});

@@ -3,8 +3,8 @@ function createPromptWindow() {
   chrome.windows.create({
     url: "popup.html",
     type: "popup",
-    width: 440,
-    height: 850 // <--- Sửa dòng này
+    width: 540,
+    height: 900
   });
 }
 
@@ -26,6 +26,13 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 // 2. Lắng nghe phím tắt (Alt + Shift + P)
 chrome.commands.onCommand.addListener((command) => {
   if (command === "open_builder_window") {
+    createPromptWindow();
+  }
+});
+
+// 3. Lắng nghe message từ popup (nút Pop Out)
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.action === "openPopupWindow") {
     createPromptWindow();
   }
 });

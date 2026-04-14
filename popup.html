@@ -3,98 +3,656 @@
 <head>
     <meta charset="UTF-8">
     <title>Veo Prompt Studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #1a73e8; --bg: #ffffff; --section-bg: #f8f9fa; --border: #dadce0; --text: #3c4043; }
-        :root.dark-mode { --primary: #8ab4f8; --bg: #202124; --section-bg: #292a2d; --border: #3c4043; --text: #e8eaed; }
-        
-        body { width: 100%; max-width: 800px; min-width: 300px; box-sizing: border-box; padding: 15px 15px 80px 15px; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0 auto; transition: background 0.3s, color 0.3s; }
+        /* ===== DESIGN TOKENS ===== */
+        :root {
+            --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 12px; }
-        h3 { margin: 0; color: var(--primary); font-size: 15px; font-weight: 600; }
-        .formula-tag { font-size: 9px; color: #9aa0a6; font-weight: 400; margin-left: 5px; }
+            /* Light palette */
+            --bg:          #f0f2f5;
+            --bg-card:     rgba(255, 255, 255, 0.72);
+            --max-w:       960px;
+            --bg-card-solid: #ffffff;
+            --bg-input:    #ffffff;
+            --border:      rgba(0, 0, 0, 0.08);
+            --border-hover: rgba(0, 0, 0, 0.14);
+            --text:        #1a1d21;
+            --text-secondary: #6b7280;
+            --text-muted:  #9ca3af;
 
-        #toggleSettings, #toggleDarkMode { cursor: pointer; padding: 5px; border-radius: 50%; display: flex; align-items: center; flex-shrink: 0; }
-        #toggleSettings:hover, #toggleDarkMode:hover { background: rgba(154, 160, 166, 0.2); }
-        #toggleSettings svg, #toggleDarkMode svg { fill: var(--text); width: 18px; height: 18px; }
+            /* Accent palette */
+            --accent:      #6366f1;
+            --accent-hover:#4f46e5;
+            --accent-soft: rgba(99, 102, 241, 0.08);
+            --accent-ring: rgba(99, 102, 241, 0.25);
 
-        #aiSettingsBox { display: none; background: var(--section-bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 12px; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
-        .ai-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px dashed #ddd; padding-bottom: 5px; }
-        .sync-link { font-size: 10px; color: var(--primary); cursor: pointer; text-decoration: underline; }
+            --green:       #10b981;
+            --green-soft:  rgba(16, 185, 129, 0.08);
+            --green-border:rgba(16, 185, 129, 0.20);
+            --green-ring:  rgba(16, 185, 129, 0.25);
 
-        .group { background: var(--section-bg); border: 1px solid var(--border); border-radius: 8px; padding: 9px 10px 5px; margin-bottom: 9px; transition: background 0.3s, border 0.3s; }
-        .group-title { font-size: 9px; font-weight: 700; color: #9aa0a6; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 7px; display: flex; align-items: center; gap: 5px; }
-        .badge { color: white; border-radius: 10px; padding: 1px 6px; font-size: 8px; font-weight: 700; }
-        .b-blue   { background: #1a73e8; }
-        .b-green  { background: #1e8e3e; }
-        .b-purple { background: #7c4dff; }
-        .b-orange { background: #e8710a; }
-        .b-teal   { background: #007b83; }
-        .translate-note { font-size: 9px; color: #1e8e3e; margin-left: 3px; }
+            --orange:      #f59e0b;
+            --purple:      #8b5cf6;
+            --teal:        #14b8a6;
+            --red:         #ef4444;
 
-        .group-green { background: #e6f4ea; border-color: #ceead6; }
-        :root.dark-mode .group-green { background: #132318; border-color: #1e8e3e; }
+            /* Shadows & effects */
+            --shadow-sm:   0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
+            --shadow-md:   0 4px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
+            --shadow-lg:   0 10px 30px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
+            --shadow-glow: 0 0 20px rgba(99,102,241,0.15);
 
-        .btn-trans-mini { font-size: 11px; padding: 2px 5px; margin-left: auto; cursor: pointer; background: transparent; color: var(--primary); border: 1px solid var(--border); border-radius: 4px; transition: 0.2s; }
-        .btn-trans-mini:hover { background: rgba(26,115,232,0.1); }
+            --radius-sm:   8px;
+            --radius-md:   12px;
+            --radius-lg:   16px;
+            --radius-xl:   20px;
 
-        .section { margin-bottom: 7px; }
-        label { display: block; font-size: 10px; font-weight: 700; color: #9aa0a6; margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.4px; }
-        input, textarea, select { width: 100%; box-sizing: border-box; padding: 7px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 12px; outline: none; background: var(--bg); color: var(--text); font-family: inherit; transition: 0.2s; }
-        input:focus, textarea:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(26,115,232,0.1); }
-        .row-2 { display: flex; gap: 6px; }
-        .row-2 > * { flex: 1; min-width: 0; }
+            --blur:        12px;
+            --transition:  0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
 
-        .btn-group { display: flex; gap: 8px; margin-top: 12px; }
-        button { flex: 1; padding: 11px; cursor: pointer; border: none; border-radius: 6px; font-weight: 600; font-size: 12px; transition: 0.2s; text-transform: uppercase; }
-        #btnTranslate { background: rgba(26,115,232,0.1); color: var(--primary); border: 1px solid var(--border); }
-        #btnTranslate:hover { background: rgba(26,115,232,0.2); }
-        #btnCopy { background: var(--primary); color: white; }
-        #btnCopy:hover { background: #1557b0; }
+        /* ===== DARK MODE ===== */
+        :root.dark-mode {
+            --bg:          #0f1117;
+            --bg-card:     rgba(30, 33, 43, 0.75);
+            --bg-card-solid: #1e212b;
+            --bg-input:    #262a36;
+            --border:      rgba(255, 255, 255, 0.07);
+            --border-hover: rgba(255, 255, 255, 0.14);
+            --text:        #f1f3f5;
+            --text-secondary: #9ca3af;
+            --text-muted:  #6b7280;
 
-        .status { font-size: 11px; margin-top: 8px; text-align: center; min-height: 15px; color: var(--primary); }
-        .status.error { color: #d93025; }
+            --accent:      #818cf8;
+            --accent-hover:#6366f1;
+            --accent-soft: rgba(129, 140, 248, 0.10);
+            --accent-ring: rgba(129, 140, 248, 0.30);
 
-        .switch { position: relative; display: inline-block; width: 30px; height: 16px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .3s; border-radius: 20px; }
-        .slider:before { position: absolute; content: ""; height: 12px; width: 12px; left: 2px; bottom: 2px; background-color: white; transition: .3s; border-radius: 50%; }
-        input:checked + .slider { background-color: #1e8e3e; }
-        input:checked + .slider:before { transform: translateX(14px); }
-		#btnGenMultishot { background: #34a853; color: white; padding: 7px; flex: 0.5; }
-#btnGenMultishot:hover { background: #2b8c46; }
-#btnGenMultishot:disabled { background: #999; cursor: not-allowed; }
-#btnCopyMultishot { background: var(--border); color: var(--text); margin-top: 5px; width: 100%; border: 1px solid var(--border); }
-#btnCopyMultishot:hover { background: rgba(154,160,166,0.2); }
-#multishotOutput { font-family: monospace; font-size: 11px; line-height: 1.4; resize: vertical; }
-/* Thanh công cụ ghim cố định ở đáy */
-.bottom-bar {
-    position: fixed;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100%;
-    max-width: 800px;
-    background: var(--bg);
-    padding: 10px 15px 15px 15px;
-    box-sizing: border-box;
-    border-top: 1px solid var(--border);
-    box-shadow: 0 -4px 12px rgba(0,0,0,0.06);
-    z-index: 999;
-}
-.bottom-bar .btn-group { margin-top: 4px; }
-.bottom-bar .status { margin-top: 0; margin-bottom: 4px; }
+            --green:       #34d399;
+            --green-soft:  rgba(52, 211, 153, 0.08);
+            --green-border:rgba(52, 211, 153, 0.18);
+            --green-ring:  rgba(52, 211, 153, 0.25);
+
+            --shadow-sm:   0 1px 3px rgba(0,0,0,0.20);
+            --shadow-md:   0 4px 12px rgba(0,0,0,0.25);
+            --shadow-lg:   0 10px 30px rgba(0,0,0,0.35);
+            --shadow-glow: 0 0 25px rgba(129,140,248,0.12);
+        }
+
+        /* ===== SCROLLBAR ===== */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 99px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
+
+        /* ===== BASE ===== */
+        * { box-sizing: border-box; }
+
+        body {
+            width: 100%;
+            max-width: 960px;
+            min-width: 320px;
+            padding: 20px 18px 100px 18px;
+            font-family: var(--font);
+            font-size: 13px;
+            line-height: 1.5;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0 auto;
+            transition: background var(--transition), color var(--transition);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ===== ANIMATIONS ===== */
+        @keyframes fadeSlideIn {
+            from { opacity: 0; transform: translateY(-8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 14px;
+            margin-bottom: 18px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--accent), var(--purple));
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: white;
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+            flex-shrink: 0;
+        }
+
+        h3 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.3px;
+        }
+
+        .formula-tag {
+            display: block;
+            font-size: 10px;
+            font-weight: 500;
+            color: var(--text-muted);
+            -webkit-text-fill-color: var(--text-muted);
+            letter-spacing: 0.2px;
+            margin-top: 1px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 4px;
+        }
+
+        .icon-btn {
+            cursor: pointer;
+            padding: 7px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition);
+            position: relative;
+            flex-shrink: 0;
+        }
+        .icon-btn:hover {
+            background: var(--accent-soft);
+            transform: scale(1.05);
+        }
+        .icon-btn:active {
+            transform: scale(0.95);
+        }
+        .icon-btn svg {
+            fill: var(--text-secondary);
+            width: 18px;
+            height: 18px;
+            transition: fill var(--transition);
+        }
+        .icon-btn:hover svg {
+            fill: var(--accent);
+        }
+
+        /* ===== AI SETTINGS PANEL ===== */
+        #aiSettingsBox {
+            display: none;
+            background: var(--bg-card);
+            backdrop-filter: blur(var(--blur));
+            -webkit-backdrop-filter: blur(var(--blur));
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 16px;
+            margin-bottom: 16px;
+            animation: fadeSlideIn 0.3s ease;
+            box-shadow: var(--shadow-md);
+        }
+
+        .ai-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+        .ai-header > div {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--green);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .ai-header > div::before {
+            content: '';
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            background: var(--green);
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .sync-link {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--accent);
+            cursor: pointer;
+            text-decoration: none;
+            padding: 3px 8px;
+            border-radius: 6px;
+            transition: all var(--transition);
+        }
+        .sync-link:hover {
+            background: var(--accent-soft);
+            text-decoration: none;
+        }
+
+        /* ===== GROUPS (CARDS) ===== */
+        .group {
+            background: var(--bg-card);
+            backdrop-filter: blur(var(--blur));
+            -webkit-backdrop-filter: blur(var(--blur));
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 14px 16px 10px;
+            margin-bottom: 12px;
+            transition: all var(--transition);
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            overflow: hidden;
+        }
+        .group::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), transparent);
+            opacity: 0;
+            transition: opacity var(--transition);
+        }
+        .group:hover {
+            border-color: var(--border-hover);
+            box-shadow: var(--shadow-md);
+        }
+        .group:hover::before {
+            opacity: 1;
+        }
+
+        .group-green {
+            border-color: var(--green-border);
+        }
+        .group-green::before {
+            background: linear-gradient(90deg, var(--green), transparent);
+        }
+        .group-green:hover {
+            border-color: var(--green);
+            box-shadow: var(--shadow-md), 0 0 15px rgba(16, 185, 129, 0.06);
+        }
+
+        .group-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .badge {
+            color: white;
+            border-radius: 6px;
+            padding: 2px 7px;
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: 0.3px;
+            line-height: 1.4;
+        }
+        .b-blue   { background: linear-gradient(135deg, #6366f1, #4f46e5); }
+        .b-green  { background: linear-gradient(135deg, #10b981, #059669); }
+        .b-purple { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+        .b-orange { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .b-teal   { background: linear-gradient(135deg, #14b8a6, #0d9488); }
+
+        .translate-note {
+            font-size: 9px;
+            font-weight: 600;
+            color: var(--green);
+            margin-left: 2px;
+            opacity: 0.8;
+        }
+
+        .btn-trans-mini {
+            font-size: 12px;
+            padding: 3px 8px;
+            margin-left: auto;
+            cursor: pointer;
+            background: var(--accent-soft);
+            color: var(--accent);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            transition: all var(--transition);
+            font-family: var(--font);
+            font-weight: 600;
+            line-height: 1;
+        }
+        .btn-trans-mini:hover {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+            transform: scale(1.05);
+        }
+
+        /* ===== FORM FIELDS ===== */
+        .section { margin-bottom: 10px; }
+
+        label {
+            display: block;
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 9px 12px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-family: var(--font);
+            font-weight: 400;
+            outline: none;
+            background: var(--bg-input);
+            color: var(--text);
+            transition: all var(--transition);
+            line-height: 1.5;
+        }
+        input::placeholder, textarea::placeholder {
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+        input:hover, textarea:hover, select:hover {
+            border-color: var(--border-hover);
+        }
+        input:focus, textarea:focus, select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-ring);
+        }
+        .group-green input:focus, .group-green textarea:focus {
+            border-color: var(--green);
+            box-shadow: 0 0 0 3px var(--green-ring);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 40px;
+        }
+
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M2.5 4.5L6 8l3.5-3.5'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            padding-right: 30px;
+        }
+
+        .row-2 {
+            display: flex;
+            gap: 8px;
+        }
+        .row-2 > * {
+            flex: 1;
+            min-width: 0;
+        }
+
+        /* ===== TOGGLE SWITCH ===== */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 36px;
+            height: 20px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+            position: absolute;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: var(--border-hover);
+            transition: all 0.3s ease;
+            border-radius: 99px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: all 0.3s ease;
+            border-radius: 50%;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+        }
+        input:checked + .slider {
+            background: linear-gradient(135deg, var(--green), #059669);
+        }
+        input:checked + .slider:before {
+            transform: translateX(16px);
+        }
+
+        /* ===== BUTTONS ===== */
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 12px;
+            font-family: var(--font);
+            transition: all var(--transition);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+        }
+        button:active {
+            transform: scale(0.97);
+        }
+
+        #btnTranslate {
+            background: var(--accent-soft);
+            color: var(--accent);
+            border: 1.5px solid var(--border);
+        }
+        #btnTranslate:hover {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.25);
+        }
+
+        #btnCopy {
+            background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+            color: white;
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.25);
+        }
+        #btnCopy:hover {
+            box-shadow: 0 4px 18px rgba(99, 102, 241, 0.35);
+            transform: translateY(-1px);
+        }
+        #btnCopy:active {
+            transform: translateY(0) scale(0.97);
+        }
+
+        /* Multishot buttons */
+        #btnGenMultishot {
+            background: linear-gradient(135deg, var(--green), #059669);
+            color: white;
+            padding: 9px 14px;
+            flex: 0.5;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+        }
+        #btnGenMultishot:hover {
+            box-shadow: 0 4px 18px rgba(16, 185, 129, 0.35);
+            transform: translateY(-1px);
+        }
+        #btnGenMultishot:disabled {
+            background: var(--text-muted);
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        #btnCopyMultishot {
+            background: var(--bg-input);
+            color: var(--text-secondary);
+            margin-top: 8px;
+            width: 100%;
+            border: 1.5px solid var(--border);
+            font-weight: 600;
+        }
+        #btnCopyMultishot:hover {
+            background: var(--accent-soft);
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        #multishotOutput {
+            font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+            font-size: 11.5px;
+            line-height: 1.6;
+            resize: vertical;
+        }
+
+        /* ===== STATUS BAR ===== */
+        .status {
+            font-size: 11px;
+            font-weight: 500;
+            margin-top: 8px;
+            text-align: center;
+            min-height: 16px;
+            color: var(--accent);
+            transition: all var(--transition);
+        }
+        .status.error {
+            color: var(--red);
+        }
+
+        /* ===== BOTTOM BAR ===== */
+        .bottom-bar {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 960px;
+            background: var(--bg-card);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            padding: 12px 18px 16px 18px;
+            box-sizing: border-box;
+            border-top: 1px solid var(--border);
+            box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.08);
+            z-index: 999;
+        }
+        .bottom-bar .btn-group {
+            margin-top: 6px;
+        }
+        .bottom-bar .status {
+            margin-top: 0;
+            margin-bottom: 4px;
+        }
+
+        /* ===== EXTRA DETAILS ===== */
+        .setting-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-top: 1px solid var(--border);
+            padding-top: 10px;
+            margin-top: 10px;
+        }
+        .setting-row label {
+            margin: 0;
+        }
+        .format-toggle {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .variable-hint {
+            font-size: 9px;
+            color: var(--text-muted);
+            margin-top: 4px;
+            font-weight: 400;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 400px) {
+            body { padding: 14px 12px 90px 12px; }
+            .group { padding: 12px 12px 8px; }
+            h3 { font-size: 14px; }
+        }
     </style>
 </head>
 <body>
 
+    <!-- HEADER -->
     <div class="header">
-        <h3>Veo Prompt Studio <span class="formula-tag">Camera → Subject → Context → Style</span></h3>
-        <div style="display: flex; gap: 6px;">
-            <div id="toggleDarkMode">
+        <div class="header-left">
+            <div class="logo-icon">🎬</div>
+            <div>
+                <h3>Veo Prompt Studio</h3>
+                <span class="formula-tag">Camera → Subject → Context → Style</span>
+            </div>
+        </div>
+        <div class="header-actions">
+            <div class="icon-btn" id="btnPopOut" title="Open in new window">
+                <svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+            </div>
+            <div class="icon-btn" id="toggleDarkMode" title="Toggle dark mode">
                 <svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg>
             </div>
-            <div id="toggleSettings">
+            <div class="icon-btn" id="toggleSettings" title="AI Settings">
                 <svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.81,11.68,4.81,12s0.02,0.65,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94zM12,15.5c-1.93,0-3.5-1.57-3.5-3.5 s1.57-3.5,3.5-3.5s3.5,1.57,3.5,3.5S13.93,15.5,12,15.5z"/></svg>
             </div>
         </div>
@@ -103,31 +661,31 @@
     <!-- AI SETTINGS -->
     <div id="aiSettingsBox">
         <div class="ai-header">
-            <div style="font-size:11px;font-weight:bold;color:#1e8e3e;">Gemini Engine</div>
+            <div>Gemini Engine</div>
             <label class="switch"><input type="checkbox" id="useAI"><span class="slider"></span></label>
         </div>
         <div class="section"><label>API Key</label><input type="password" id="apiKey" placeholder="Gemini API Key"></div>
         <div class="section">
-            <div style="display:flex;justify-content:space-between;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
                 <label>Model</label>
                 <span id="syncModels" class="sync-link">↻ Sync models</span>
             </div>
             <select id="modelSelect"></select>
         </div>
         <div class="section">
-            <label>Translate System Prompt <span style="font-weight:normal;color:#9aa0a6;">(Variable: {TEXT})</span></label>
+            <label>Translate System Prompt <span style="font-weight:400;color:var(--text-muted);">(Variable: {TEXT})</span></label>
             <textarea id="promptTranslate" rows="3"></textarea>
         </div>
         <div class="section">
             <label>Multishot System Prompt</label>
             <textarea id="promptMultishot" rows="4"></textarea>
-            <div style="font-size: 8px; color: #9aa0a6; margin-top: 3px;">
+            <div class="variable-hint">
                 Variables: {NUM_SHOTS}, {TIMESTAMPS}, {CONTENT}, {ENVIRONMENT}, {CINEMATOGRAPHY}
             </div>
         </div>
-        <div class="section" style="display:flex;align-items:center;justify-content:space-between;border-top:1px dashed var(--border);padding-top:8px;margin-top:8px;">
-            <label style="margin:0;">Output Format</label>
-            <div style="display:flex; align-items:center; gap:5px; font-size:10px; font-weight:bold; color:var(--text); text-transform:uppercase;">
+        <div class="setting-row">
+            <label>Output Format</label>
+            <div class="format-toggle">
                 Comma
                 <label class="switch"><input type="checkbox" id="useNewline"><span class="slider"></span></label>
                 Newline
@@ -135,7 +693,7 @@
         </div>
     </div>
 
-    <!-- ① CINEMATOGRAPHY — Google formula: first -->
+    <!-- ① CINEMATOGRAPHY -->
     <div class="group">
         <div class="group-title">
             <span class="badge b-blue">①</span> 🎥 Cinematography
@@ -357,13 +915,14 @@
             </select>
         </div>
     </div>
-<!-- ⑦ MULTISHOT GENERATOR (AI) -->
+
+    <!-- ⑦ MULTISHOT GENERATOR (AI) -->
     <div class="group">
         <div class="group-title"><span class="badge b-purple">⑦</span> 🎞️ Multishot Generation (AI)</div>
         
-        <div class="section row-2" style="align-items: center; margin-bottom: 8px;">
+        <div class="section row-2" style="align-items: center; margin-bottom: 10px;">
             <label style="margin: 0; flex: 1;">Number of scenes (Max 8s):</label>
-            <select id="numShots" style="flex: 0.5; padding: 5px;">
+            <select id="numShots" style="flex: 0.5; padding: 8px 12px;">
                 <option value="2">2 scenes</option>
                 <option value="3">3 scenes</option>
                 <option value="4" selected>4 scenes</option>
@@ -376,7 +935,8 @@
             <button id="btnCopyMultishot">Copy Multishot Prompt</button>
         </div>
     </div>
-   <!-- BOTTOM ACTION BAR (Ghim cố định) -->
+
+    <!-- BOTTOM ACTION BAR -->
     <div class="bottom-bar">
         <div id="status" class="status"></div>
         <div class="btn-group">
