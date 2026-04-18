@@ -335,6 +335,8 @@ document.querySelectorAll('.btn-trans-mini').forEach(btn => {
         const group = btn.getAttribute('data-group');
         let fields = [];
         if (group === '1') fields = ['shot', 'angle', 'movement', 'lens'];
+        if (group === '2') fields = ['content'];
+        if (group === '3') fields = ['environment'];
         if (group === '4') fields = ['style', 'mood', 'lighting'];
         if (group === '5') fields = ['motion', 'technical'];
         if (group === '6') fields = ['audio'];
