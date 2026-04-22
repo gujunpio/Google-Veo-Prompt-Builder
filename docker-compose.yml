@@ -1,0 +1,7 @@
+services:
+  veo-prompt-studio:
+    build: .
+    container_name: veo-prompt-studio
+    ports:
+      - "8080:80"
+    restart: unless-stopped

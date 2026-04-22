@@ -58,6 +58,36 @@ const ui = {
 };
 
 // ============================================================
+// Storage Abstraction (Support both Extension & Web App)
+// ============================================================
+const storage = {
+    get: function(keys, callback) {
+        if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) {
+            chrome.storage.sync.get(keys, callback);
+        } else {
+            let data = {};
+            keys.forEach(key => {
+                let val = localStorage.getItem(key);
+                if (val !== null) {
+                    try { data[key] = JSON.parse(val); } catch(e) { data[key] = val; }
+                }
+            });
+            callback(data);
+        }
+    },
+    set: function(data, callback) {
+        if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) {
+            chrome.storage.sync.set(data, callback);
+        } else {
+            Object.keys(data).forEach(key => {
+                localStorage.setItem(key, JSON.stringify(data[key]));
+            });
+            if (callback) callback();
+        }
+    }
+};
+
+// ============================================================
 // 1. Settings & UI Panel
 // ============================================================
 ui.toggleBtn.addEventListener('click', () => {
@@ -71,7 +101,7 @@ ui.toggleDarkMode.addEventListener('click', () => {
 });
 
 // Load saved settings
-chrome.storage.sync.get(['key', 'aiActive', 'selectedModel', 'promptTranslate', 'promptMultishot', 'darkMode', 'useNewline'], (data) => {
+storage.get(['key', 'aiActive', 'selectedModel', 'promptTranslate', 'promptMultishot', 'darkMode', 'useNewline'], (data) => {
     if (data.darkMode) {
         document.documentElement.classList.add('dark-mode');
     }
@@ -92,7 +122,7 @@ chrome.storage.sync.get(['key', 'aiActive', 'selectedModel', 'promptTranslate', 
 
 // Save on change
 const saveSettings = () => {
-    chrome.storage.sync.set({
+    storage.set({
         key: ui.apiKey.value,
         aiActive: ui.useAI.checked,
         selectedModel: ui.model.value,
@@ -325,6 +355,12 @@ document.getElementById('btnCopyMultishot').addEventListener('click', () => {
     } else {
         showStatus('Generate a multishot prompt first!', true);
     }
+});
+
+// Nút Clear riêng cho Multishot
+document.getElementById('btnClearMultishot').addEventListener('click', () => {
+    document.getElementById('multishotOutput').value = '';
+    showStatus('Multishot Prompt cleared!');
 });
 
 // ============================================================

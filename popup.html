@@ -536,11 +536,9 @@
             transform: none;
         }
 
-        #btnCopyMultishot {
+        #btnCopyMultishot, #btnClearMultishot {
             background: var(--bg-input);
             color: var(--text-secondary);
-            margin-top: 8px;
-            width: 100%;
             border: 1.5px solid var(--border);
             font-weight: 600;
         }
@@ -548,6 +546,11 @@
             background: var(--accent-soft);
             color: var(--accent);
             border-color: var(--accent);
+        }
+        #btnClearMultishot:hover {
+            background: rgba(239, 68, 68, 0.08); /* red-soft */
+            color: var(--red);
+            border-color: var(--red);
         }
 
         #multishotOutput {
@@ -933,7 +936,10 @@
 
         <div class="section">
             <textarea id="multishotOutput" rows="6" placeholder="AI will generate timestamped shots here... (You can edit before copying)"></textarea>
-            <button id="btnCopyMultishot">Copy Multishot Prompt</button>
+            <div class="row-2" style="margin-top: 8px;">
+                <button id="btnCopyMultishot">Copy Prompt</button>
+                <button id="btnClearMultishot">Clear</button>
+            </div>
         </div>
     </div>
 
